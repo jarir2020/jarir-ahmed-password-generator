@@ -1,8 +1,9 @@
 {
     "name": "jarir-ahmed/password-generator",
-    "description": "A simple password generator that creates strong passwords between 8 to 12 characters.",
+    "description": "A cryptographically secure password generator with guaranteed character-class coverage.",
     "type": "library",
     "license": "MIT",
+    "keywords": ["password", "generator", "security", "random"],
     "authors": [
         {
             "name": "Jarir Ahmed",
@@ -14,7 +15,18 @@
             "JarirAhmed\\PasswordGenerator\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "JarirAhmed\\PasswordGenerator\\Tests\\": "tests/"
+        }
+    },
     "require": {
         "php": ">=7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }

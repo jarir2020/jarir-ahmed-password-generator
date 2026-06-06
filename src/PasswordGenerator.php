@@ -4,29 +4,59 @@ namespace JarirAhmed\PasswordGenerator;
 
 class PasswordGenerator
 {
+    const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+    const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const DIGITS = '0123456789';
+    const SYMBOLS = '!@#$%^&*()_-+=<>?';
+
+    /** Minimum length needed to guarantee one of each character class. */
+    const MIN_LENGTH = 4;
+
     /**
-     * Generate a random strong password.
+     * Generate a cryptographically secure password containing at least one lowercase,
+     * uppercase, digit and symbol.
      *
-     * @param int $length Length of the password (default is random between 8 to 12).
-     * @return string The generated password.
+     * @param int|null $length Desired length. Default: random 12–16. Minimum 4.
+     * @return string
+     * @throws \InvalidArgumentException
      */
     public static function generate($length = null)
     {
         if ($length === null) {
-            $length = rand(8, 12); // Random length between 8 to 12
-        } elseif ($length < 8 || $length > 12) {
-            throw new \InvalidArgumentException('Password length must be between 8 and 12.');
+            $length = random_int(12, 16);
+        }
+        $length = (int) $length;
+        if ($length < self::MIN_LENGTH) {
+            throw new \InvalidArgumentException(
+                'Password length must be at least ' . self::MIN_LENGTH . '.'
+            );
         }
 
-        // Characters to be included in the password
-        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+=<>?';
-        $charactersLength = strlen($characters);
-        $randomPassword = '';
+        $classes = [self::LOWER, self::UPPER, self::DIGITS, self::SYMBOLS];
+        $all = implode('', $classes);
 
-        for ($i = 0; $i < $length; $i++) {
-            $randomPassword .= $characters[rand(0, $charactersLength - 1)];
+        // Guarantee one character from each class...
+        $chars = [];
+        foreach ($classes as $class) {
+            $chars[] = $class[random_int(0, strlen($class) - 1)];
+        }
+        // ...then fill the remainder from the full set.
+        for ($i = count($chars); $i < $length; $i++) {
+            $chars[] = $all[random_int(0, strlen($all) - 1)];
         }
 
-        return $randomPassword;
+        return self::secureShuffle($chars);
+    }
+
+    /** Fisher–Yates shuffle using a CSPRNG, so the guaranteed chars aren't always first. */
+    private static function secureShuffle(array $chars)
+    {
+        for ($i = count($chars) - 1; $i > 0; $i--) {
+            $j = random_int(0, $i);
+            $tmp = $chars[$i];
+            $chars[$i] = $chars[$j];
+            $chars[$j] = $tmp;
+        }
+        return implode('', $chars);
     }
 }
